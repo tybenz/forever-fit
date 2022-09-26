@@ -114,13 +114,15 @@ export default class AppStore {
             throw new Error('Missing selected user/phone-number');
         }
 
-        const today = moment().toISOString();
         const timezone = moment.tz.guess();
+        const today = moment.tz(moment().startOf('day'), timezone).toISOString();
 
         this.start = today;
         this.startTimezone = timezone;
 
-        return this.updateUserRecord();
+        return this.updateUserRecord().then(() => {
+            this._didUpdate();
+        });
     }
 
     challengeIsUnderway() {
@@ -136,28 +138,85 @@ export default class AppStore {
     isTodayComplete() {
         const timezone = this.startTimezone;
         const mostRecentlyLoggedDay = this.days[this.days.length - 1];
+        if (!mostRecentlyLoggedDay) {
+            return false;
+        }
+
         const mostRecentlyLoggedDateStr = mostRecentlyLoggedDay.date;
         const mostRecentlyLoggedDate = moment.tz(mostRecentlyLoggedDateStr, timezone);
         const today = moment.tz(moment(), timezone);
         return today.diff(mostRecentlyLoggedDate, 'days') === 0;
     }
 
+    providedPictureWhenNecessary() {
+        // every 7 days
+        return true;
+    }
+
+    getPreviousDay(offset) {
+        if (this.isTodayComplete()) {
+            offset++;
+        }
+        return this.days[this.days.length - offset];
+    }
+
+    isRestDay() {
+        const today = this.getToday();
+        const prevDay1 = this.getPreviousDay(1);
+        const prevDay2 = this.getPreviousDay(2);
+        return !today.didWorkout && (prevDay1 && prevDay1.didWorkout) && (prevDay2 && prevDay2.didWorkout);
+    }
+
+    isCheatDay() {
+        const today = this.getToday();
+        const prevDay1 = this.getPreviousDay(1);
+        const prevDay2 = this.getPreviousDay(2);
+        const prevDay3 = this.getPreviousDay(3);
+        return !today.noCheatMeals && (prevDay1 && prevDay1.noCheatMeals) && (prevDay2 && prevDay2.noCheatMeals) && (prevDay3 && prevDay3.noCheatMeals);
+    }
+
+    isTodaySuccess() {
+        const today = this.getToday();
+
+        return (today.didWorkout || this.isRestDay())
+            && (today.noCheatMeals || this.isCheatDay())
+            && today.didRead && today.didDrinkWater
+            && this.providedPictureWhenNecessary();
+    }
+
     getTodayFromCache() {
-        var today;
+        let today;
         try {
-            var str = localStorage.getItem(`today:${this.phoneNumber}`);
+            let str = localStorage.getItem(`today:${this.phoneNumber}`);
             today = JSON.parse(str);
         } catch (err) {
         }
+        if (!today) {
+            today = {
+                date: moment.tz(moment().startOf('day'), this.startTimezone).toISOString(),
+                didWorkout: false,
+                didRead: false,
+                didDrinkWater: false,
+                noCheatMeals: false
+            };
+        }
         this.today = today;
 
-        this._didUpdate();
         return today;
     }
 
+    clearTodayFromCache() {
+        try {
+            localStorage.removeItem(`today:${this.phoneNumber}`);
+        } catch (err) {
+        }
+    }
+
     getToday() {
-        var today = this.today || this.getTodayFromCache();
-        return today;
+        if (!this.today) {
+            this.today = this.getTodayFromCache();
+        }
+        return this.today;
     }
 
     backupUser(phoneNumber) {
@@ -168,8 +227,8 @@ export default class AppStore {
         }
     }
 
-    backupToday() {
-        var day = this.getToday();
+    backupToday(day) {
+        this.today = day;
         try {
             localStorage.setItem(`today:${this.phoneNumber}`, JSON.stringify(day));
         } catch (err) {
@@ -178,44 +237,90 @@ export default class AppStore {
     }
 
     checkDidWorkout() {
-        var today = this.getToday();
+        const today = this.getToday();
         today.didWorkout = true;
-        this.backupToday();
+        this.backupToday(today);
+        this._didUpdate();
+    }
+
+    uncheckDidWorkout() {
+        const today = this.getToday();
+        today.didWorkout = false;
+        this.backupToday(today);
+        this._didUpdate();
     }
 
     checkDidDrinkWater() {
-        var today = this.getToday();
+        const today = this.getToday();
         today.didDrinkWater = true;
-        this.backupToday();
+        this.backupToday(today);
+        this._didUpdate();
+    }
+
+    uncheckDidDrinkWater() {
+        const today = this.getToday();
+        today.didDrinkWater = false;
+        this.backupToday(today);
+        this._didUpdate();
     }
 
     checkDidRead() {
-        var today = this.getToday();
+        const today = this.getToday();
         today.didRead = true;
-        this.backupToday();
+        this.backupToday(today);
+        this._didUpdate();
+    }
+
+    uncheckDidRead() {
+        const today = this.getToday();
+        today.didRead = false;
+        this.backupToday(today);
+        this._didUpdate();
     }
 
     checkNoCheatMeals() {
-        var today = this.getToday();
+        const today = this.getToday();
         today.noCheatMeals = true;
-        this.backupToday();
+        this.backupToday(today);
+        this._didUpdate();
     }
 
-    completedToday(day) {
-        console.log(day);
-        // push in-memory today into days array
-        // increment current streak
-            // if currentStreak > maxStreak, then set maxStreak equal to currentStreak
-
-        // push entire user to DB
-        // clear localStorage for today
+    uncheckNoCheatMeals() {
+        const today = this.getToday();
+        today.noCheatMeals = false;
+        this.backupToday(today);
+        this._didUpdate();
     }
 
-    failedToday(day) {
+    async completedToday(day) {
         console.log(day);
-        // if currentStreak > maxStreak, then set maxStreak equal to currentStreak
 
-        // push entire user to DB
-        // clear localStorage for today
+        this.days.push(this.getToday());
+        this.currentStreak++;
+        if (this.currentStreak > this.maxStreak) {
+            this.maxStreak = this.currentStreak;
+        }
+
+        await this.updateUserRecord();
+
+        this.clearTodayFromCache();
+        this._didUpdate();
+    }
+
+    async failedToday(day) {
+        console.log(day);
+        if (this.currentStreak > this.maxStreak) {
+            this.maxStreak = this.currentStreak;
+        }
+
+        this.currentStreak = 0;
+        this.days = [];
+        this.start = false;
+        this.startTimezone = false;
+
+        await this.updateUserRecord();
+
+        this.clearTodayFromCache();
+        this._didUpdate();
     }
 }

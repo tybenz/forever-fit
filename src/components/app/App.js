@@ -1,4 +1,8 @@
 import { Component } from 'react';
+import Calendar from '../calendar/Calendar';
+import SetupView from '../setup-view/SetupView';
+import PendingView from '../pending-view/PendingView';
+import Streaks from '../streaks/Streaks';
 import './App.css';
 
 class App extends Component {
@@ -6,36 +10,14 @@ class App extends Component {
         super(props);
         this._update = this._update.bind(this);
         this.state = {
-            settingUpUser: false
+            showCalendar: false
         };
     }
 
-    handlePhoneNumberChange(evt) {
-        this._phoneNumberInput = evt.target.value;
-    }
-
-    async handlePhoneNumberEntered(evt) {
-        evt.stopPropagation();
-        evt.preventDefault();
-        const { appStore } = this.props;
-
-        this.setState({ settingUpUser: true });
-        await appStore.setupUser(this._phoneNumberInput);
-        this.setState({ settingUpUser: false });
-    }
-
-    async handleStartClick(evt) {
-        evt.stopPropagation();
-        evt.preventDefault();
-        const { appStore } = this.props;
-
-        this.setState({ startingChallenge: true });
-        await appStore.startChallenge();
-        this.setState({ startingChallenge: false });
-    }
-
     _update() {
-        this.forceUpdate();
+        setTimeout(() => {
+            this.forceUpdate();
+        }, 0);
     }
 
     componentDidMount() {
@@ -46,228 +28,120 @@ class App extends Component {
         window.removeEventListener('app-store-did-update', this._update);
     }
 
+    handleCalendarButtonClick(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        this.setState({ showCalendar: true });
+    }
+
+    handleCalendarHide(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        this.setState({ showCalendar: false });
+    }
+
+    handleWorkoutCheckbox(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        const { appStore } = this.props;
+        if (evt.target.checked) {
+            appStore.checkDidWorkout();
+        } else {
+            appStore.uncheckDidWorkout();
+        }
+    }
+
+    handleWaterCheckbox(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        const { appStore } = this.props;
+        if (evt.target.checked) {
+            appStore.checkDidDrinkWater();
+        } else {
+            appStore.uncheckDidDrinkWater();
+        }
+    }
+
+    handleReadingCheckbox(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        const { appStore } = this.props;
+        if (evt.target.checked) {
+            appStore.checkDidRead();
+        } else {
+            appStore.uncheckDidRead();
+        }
+    }
+
+    handleMealsCheckbox(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        const { appStore } = this.props;
+        if (evt.target.checked) {
+            appStore.checkNoCheatMeals();
+        } else {
+            appStore.uncheckNoCheatMeals();
+        }
+    }
+
+    async handleSuccess(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        const { appStore } = this.props;
+        await appStore.completedToday();
+    }
+
+    async handleFailure(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        const { appStore } = this.props;
+        await appStore.failedToday();
+    }
+
+    _renderDoneButton() {
+        const { appStore } = this.props;
+
+        if (appStore.isTodayComplete()) {
+            return <button className="complete-day-button disabled completed" disabled>COMPLETE <span className="thumbs-up" /></button>;
+        }
+
+        if (appStore.isTodaySuccess()) {
+            return <button onClick={this.handleSuccess.bind(this)} className="complete-day-button">Done</button>;
+        }
+
+        return <button onClick={this.handleFailure.bind(this)} className="complete-day-button failure">I Failed</button>;
+    }
+
     _renderMain() {
+        console.log('render main');
         const { appStore } = this.props;
         const { phoneNumber } = appStore;
 
         if (!phoneNumber) {
-            return (
-                <div className="setup-view">
-                    <img className="big-logo" src="/logo.png" />
-                    <form className="setup-view-inner">
-                        <label htmlFor="phoneNumber">Enter your phone number:</label>
-                        <br/>
-                        <input onChange={this.handlePhoneNumberChange.bind(this)} id="phoneNumber" name="phoneNumber" placeholder="Ex: 2098675309" />
-                        <br/>
-                        <button onClick={this.handlePhoneNumberEntered.bind(this)}>Set</button>
-                    </form>
-                </div>
-            );
+            return <SetupView appStore={appStore} />;
         }
-
-        const view = "day";
 
         if (!appStore.challengeIsUnderway()) {
-            return (
-                <div className="pending-view">
-                    <img className="big-logo" src="/logo.png" />
-                    <form className="pending-view-inner">
-                        <label>Click "Start" when you are on day one:</label>
-                        <br/>
-                        <button onClick={this.handleStartClick.bind(this)}>Start</button>
-                    </form>
-                </div>
-            );
+            return <PendingView appStore={appStore} />;
         }
 
-        if (view === "calendar") {
-            return (
-                <div className="calendar-view">
-                    <button className="calendar-close"></button>
-                    <div className="calendar">
-                        <div className="month">
-                            <div className="month-title">July</div>
-                            <div className="month-grid">
-                                <div className="calendar-row">
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day inactive"></div>
-                                    <div className="calendar-day inactive"></div>
-                                </div>
-                                <div className="calendar-row">
-                                    <div className="calendar-day inactive"></div>
-                                    <div className="calendar-day inactive"></div>
-                                    <div className="calendar-day inactive"></div>
-                                    <div className="calendar-day inactive"></div>
-                                    <div className="calendar-day inactive"></div>
-                                    <div className="calendar-day inactive"></div>
-                                    <div className="calendar-day inactive"></div>
-                                </div>
-                                <div className="calendar-row">
-                                    <div className="calendar-day inactive"></div>
-                                    <div className="calendar-day inactive"></div>
-                                    <div className="calendar-day completed">1</div>
-                                    <div className="calendar-day completed">2</div>
-                                    <div className="calendar-day completed rest-day">3</div>
-                                    <div className="calendar-day completed cheat-meal">4</div>
-                                    <div className="calendar-day completed">5</div>
-                                </div>
-                                <div className="calendar-row">
-                                    <div className="calendar-day completed">6</div>
-                                    <div className="calendar-day completed">7</div>
-                                    <div className="calendar-day completed">8</div>
-                                    <div className="calendar-day completed">9</div>
-                                    <div className="calendar-day completed">10</div>
-                                    <div className="calendar-day completed">11</div>
-                                    <div className="calendar-day completed">12</div>
-                                </div>
-                                <div className="calendar-row">
-                                    <div className="calendar-day completed">13</div>
-                                    <div className="calendar-day completed">14</div>
-                                    <div className="calendar-day completed">15</div>
-                                    <div className="calendar-day completed">16</div>
-                                    <div className="calendar-day completed">17</div>
-                                    <div className="calendar-day completed">18</div>
-                                    <div className="calendar-day completed">19</div>
-                                </div>
-                                <div className="calendar-row">
-                                    <div className="calendar-day completed">20</div>
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day blank"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="month">
-                            <div className="month-title">August</div>
-                            <div className="month-grid">
-                                <div className="calendar-row">
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day completed">21</div>
-                                    <div className="calendar-day completed">22</div>
-                                    <div className="calendar-day completed">23</div>
-                                    <div className="calendar-day completed">24</div>
-                                    <div className="calendar-day completed">25</div>
-                                    <div className="calendar-day completed">26</div>
-                                </div>
-                                <div className="calendar-row">
-                                    <div className="calendar-day completed">27</div>
-                                    <div className="calendar-day completed">28</div>
-                                    <div className="calendar-day completed">29</div>
-                                    <div className="calendar-day completed">30</div>
-                                    <div className="calendar-day completed">31</div>
-                                    <div className="calendar-day completed">32</div>
-                                    <div className="calendar-day completed">33</div>
-                                </div>
-                                <div className="calendar-row">
-                                    <div className="calendar-day completed">34</div>
-                                    <div className="calendar-day completed">35</div>
-                                    <div className="calendar-day completed">36</div>
-                                    <div className="calendar-day completed">37</div>
-                                    <div className="calendar-day completed rest-day">38</div>
-                                    <div className="calendar-day completed cheat-meal">39</div>
-                                    <div className="calendar-day completed">40</div>
-                                </div>
-                                <div className="calendar-row">
-                                    <div className="calendar-day completed">41</div>
-                                    <div className="calendar-day completed">42</div>
-                                    <div className="calendar-day completed">43</div>
-                                    <div className="calendar-day completed">44</div>
-                                    <div className="calendar-day completed">45</div>
-                                    <div className="calendar-day completed">46</div>
-                                    <div className="calendar-day completed">47</div>
-                                </div>
-                                <div className="calendar-row">
-                                    <div className="calendar-day completed">48</div>
-                                    <div className="calendar-day completed">49</div>
-                                    <div className="calendar-day completed">50</div>
-                                    <div className="calendar-day completed">51</div>
-                                    <div className="calendar-day completed">52</div>
-                                    <div className="calendar-day completed">53</div>
-                                    <div className="calendar-day completed">54</div>
-                                </div>
-                                <div className="calendar-row">
-                                    <div className="calendar-day completed">55</div>
-                                    <div className="calendar-day completed">56</div>
-                                    <div className="calendar-day completed">57</div>
-                                    <div className="calendar-day completed">58</div>
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day blank"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="month">
-                            <div className="month-title">September</div>
-                            <div className="month-grid">
-                                <div className="calendar-row">
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day blank"></div>
-                                    <div className="calendar-day completed">59</div>
-                                    <div className="calendar-day completed">60</div>
-                                    <div className="calendar-day completed">61</div>
-                                </div>
-                                <div className="calendar-row">
-                                    <div className="calendar-day completed">62</div>
-                                    <div className="calendar-day completed">63</div>
-                                    <div className="calendar-day completed">64</div>
-                                    <div className="calendar-day completed">65</div>
-                                    <div className="calendar-day completed">66</div>
-                                    <div className="calendar-day completed">67</div>
-                                    <div className="calendar-day completed">68</div>
-                                </div>
-                                <div className="calendar-row">
-                                    <div className="calendar-day completed">69</div>
-                                    <div className="calendar-day completed">70</div>
-                                    <div className="calendar-day completed">71</div>
-                                    <div className="calendar-day completed rest-day">72</div>
-                                    <div className="calendar-day completed cheat-meal">73</div>
-                                    <div className="calendar-day completed">74</div>
-                                    <div className="calendar-day completed">75</div>
-                                </div>
-                                <div className="calendar-row">
-                                    <div className="calendar-day completed">76</div>
-                                    <div className="calendar-day completed">77</div>
-                                    <div className="calendar-day completed">78</div>
-                                    <div className="calendar-day completed">79</div>
-                                    <div className="calendar-day completed">80</div>
-                                    <div className="calendar-day completed">81</div>
-                                    <div className="calendar-day completed">82</div>
-                                </div>
-                                <div className="calendar-row">
-                                    <div className="calendar-day completed">83</div>
-                                    <div className="calendar-day completed">84</div>
-                                    <div className="calendar-day completed">85</div>
-                                    <div className="calendar-day completed">86</div>
-                                    <div className="calendar-day completed">87</div>
-                                    <div className="calendar-day completed">88</div>
-                                    <div className="calendar-day completed">89</div>
-                                </div>
-                                <div className="calendar-row">
-                                    <div className="calendar-day completed">90</div>
-                                    <div className="calendar-day pending">91</div>
-                                    <div className="calendar-day inactive"></div>
-                                    <div className="calendar-day inactive"></div>
-                                    <div className="calendar-day inactive"></div>
-                                    <div className="calendar-day inactive"></div>
-                                    <div className="calendar-day blank"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
+        if (this.state.showCalendar) {
+            return <Calendar appStore={appStore} onHide={this.handleCalendarHide.bind(this)} />;
         }
 
         const isTodayComplete = appStore.isTodayComplete();
+        const today = appStore.getToday();
+        const { didWorkout, didRead, didDrinkWater, noCheatMeals } = today;
+        const isRestDay = appStore.isRestDay();
+        const isCheatDay = appStore.isCheatDay();
 
         // view === "day"
         return (
@@ -277,43 +151,28 @@ class App extends Component {
                     {/*
                     <div className="header-title">Day 13 → 18</div>
                     */}
-                    <button alt="Calendar" title="Calendar"></button>
+                    <button alt="Calendar" title="Calendar" onClick={this.handleCalendarButtonClick.bind(this)}></button>
                 </div>
                 <div className="day">
                     <div className={`line-item${isTodayComplete ? ' disabled' : ''}`}>
-                        <input disabled={isTodayComplete} type="checkbox" id="didWorkout" name="didWorkout" />
-                        <label htmlFor="didWorkout">Workout</label>
+                        <input disabled={isTodayComplete} onChange={this.handleWorkoutCheckbox.bind(this)} checked={didWorkout} type="checkbox" id="didWorkout" name="didWorkout" />
+                        <label htmlFor="didWorkout">Workout{isRestDay ? <span className="rest-day-flag" /> : ''}</label>
                     </div>
                     <div className={`line-item${isTodayComplete ? ' disabled' : ''}`}>
-                        <input disabled={isTodayComplete} type="checkbox" id="didDrinkWater" name="didDrinkWater" />
+                        <input disabled={isTodayComplete} onChange={this.handleWaterCheckbox.bind(this)} checked={didDrinkWater} type="checkbox" id="didDrinkWater" name="didDrinkWater" />
                         <label htmlFor="didDrinkWater">Drink 1 gallon of water</label>
                     </div>
                     <div className={`line-item${isTodayComplete ? ' disabled' : ''}`}>
-                        <input disabled={isTodayComplete} type="checkbox" id="didRead" name="didRead" />
+                        <input disabled={isTodayComplete} onChange={this.handleReadingCheckbox.bind(this)} checked={didRead} type="checkbox" id="didRead" name="didRead" />
                         <label htmlFor="didRead">Read 10 pages</label>
                     </div>
                     <div className={`line-item${isTodayComplete ? ' disabled' : ''}`}>
-                        <input disabled={isTodayComplete} type="checkbox" id="noCheatMeals" name="noCheatMeals" />
-                        <label htmlFor="noCheatMeals">No cheat meals</label>
+                        <input disabled={isTodayComplete} onChange={this.handleMealsCheckbox.bind(this)} checked={noCheatMeals} type="checkbox" id="noCheatMeals" name="noCheatMeals" />
+                        <label htmlFor="noCheatMeals">No cheat meals{isCheatDay ? <span className="cheat-day-flag" /> : ''}</label>
                     </div>
-                    {/*
-                        <button className="complete-day-button">Done</button>
-                    */}
-                    {isTodayComplete
-                        ? <button className="complete-day-button disabled completed" disabled>COMPLETE <span className="thumbs-up" /></button>
-                        : <button className="complete-day-button failure">I Failed</button>
-                    }
+                    {this._renderDoneButton()}
                 </div>
-                <div className="streaks">
-                    <div className="streak current isEqualToMax">
-                        <span className="streak-label">Current streak: </span>
-                        <span className="streak-value">1</span>
-                    </div>
-                    <div className="streak max">
-                        <span className="streak-label">Max streak: </span>
-                        <span className="streak-value">1</span>
-                    </div>
-                </div>
+                <Streaks appStore={appStore} />
             </div>
         );
     }

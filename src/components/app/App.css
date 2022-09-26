@@ -201,6 +201,20 @@ button,
     padding: 0.7em;
 }
 
+.cheat-day-flag,
+.rest-day-flag {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 20px;
+    background-color: #fb0;
+    margin-left: 10px;
+}
+
+.rest-day-flag {
+    background-color: #1c4;
+}
+
 .day .line-item.disabled label {
     color: #ddd;
 }

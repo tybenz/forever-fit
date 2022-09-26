@@ -4,18 +4,35 @@
       "phoneNumber": "2096142267",
       "days": [
         {
-          "date": "2022-09-24T07:00:00.000Z",
+          "date": "2022-09-26T07:00:00.000Z",
           "didWorkout": true,
+          "didRead": true,
           "didDrinkWater": true,
-          "noCheatMeals": true,
-          "didRead": true
+          "noCheatMeals": true
         }
       ],
-      "start": "2022-09-26T21:22:11.120Z",
+      "start": "2022-09-26T07:00:00.000Z",
+      "startTimezone": "America/Los_Angeles",
+      "currentStreak": 1,
+      "maxStreak": 5,
+      "id": 1
+    },
+    {
+      "phoneNumber": "2095813944",
+      "days": [
+        {
+          "date": "2022-09-26T07:00:00.000Z",
+          "didWorkout": true,
+          "didRead": true,
+          "didDrinkWater": true,
+          "noCheatMeals": true
+        }
+      ],
+      "start": "2022-09-26T07:00:00.000Z",
       "startTimezone": "America/Los_Angeles",
       "currentStreak": 1,
       "maxStreak": 1,
-      "id": "EQACMrl"
+      "id": 2
     }
   ]
 }
