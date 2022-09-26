@@ -1,0 +1,24 @@
+{
+  "users": [
+    {
+      "id": "2096142267",
+      "days": [
+        {
+          "date": "2022-09-24T07:00:00.000Z",
+          "didWorkout": true,
+          "didDrinkWater": true,
+          "noCheatMeals": true,
+          "didRead": true
+        }
+      ],
+      "starts": [
+        "2022-09-24T07:00:00.000Z"
+      ],
+      "currentStreak": 1,
+      "maxStreak": 1
+    },
+    {
+      "id": "-2QaEqS"
+    }
+  ]
+}
