@@ -26,6 +26,14 @@ body {
     background-color: #fff;
 }
 
+.big-logo {
+    width: 200px;
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 .setup-view,
 .pending-view {
     background-color: #fff;
@@ -38,7 +46,7 @@ body {
 
 .setup-view-inner,
 .pending-view-inner {
-    width: 70%;
+    width: 60%;
     position: absolute;
     top: 50%;
     left: 50%;

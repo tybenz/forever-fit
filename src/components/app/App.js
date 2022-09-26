@@ -52,6 +52,7 @@ class App extends Component {
         if (view === "setup") {
             return (
                 <div className="setup-view">
+                    <img className="big-logo" src="/logo.png" />
                     <form className="setup-view-inner">
                         <label htmlFor="phoneNumber">Enter your phone number:</label>
                         <br/>
@@ -66,6 +67,7 @@ class App extends Component {
         if (view === "pending") {
             return (
                 <div className="pending-view">
+                    <img className="big-logo" src="/logo.png" />
                     <form className="pending-view-inner">
                         <label>Click "Start" when you are on day one:</label>
                         <br/>
@@ -299,11 +301,11 @@ class App extends Component {
                 </div>
                 <div className="streaks">
                     <div className="streak current isEqualToMax">
-                        <span className="streak-label">Current streak:</span>
+                        <span className="streak-label">Current streak: </span>
                         <span className="streak-value">1</span>
                     </div>
                     <div className="streak max">
-                        <span className="streak-label">Max streak:</span>
+                        <span className="streak-label">Max streak: </span>
                         <span className="streak-value">1</span>
                     </div>
                 </div>
