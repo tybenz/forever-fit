@@ -14,12 +14,24 @@ class App extends Component {
         this._phoneNumberInput = evt.target.value;
     }
 
-    async handlePhoneNumberEntered() {
+    async handlePhoneNumberEntered(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
         const { appStore } = this.props;
 
         this.setState({ settingUpUser: true });
         await appStore.setupUser(this._phoneNumberInput);
         this.setState({ settingUpUser: false });
+    }
+
+    async handleStartClick(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        const { appStore } = this.props;
+
+        this.setState({ startingChallenge: true });
+        await appStore.startChallenge();
+        this.setState({ startingChallenge: false });
     }
 
     _update() {
@@ -35,21 +47,10 @@ class App extends Component {
     }
 
     _renderMain() {
-        // const { appStore } = this.props;
-        // const { phoneNumber } = appStore;
+        const { appStore } = this.props;
+        const { phoneNumber } = appStore;
 
-        // if (!phoneNumber) {
-        //     return (
-        //         <>
-        //             <input onChange={this.handlePhoneNumberChange.bind(this)} placeholder="Enter your phone number..." />
-        //             <button onClick={this.handlePhoneNumberEntered.bind(this)}>Ok</button>
-        //         </>
-        //     );
-        // }
-
-        const view = "day";
-
-        if (view === "setup") {
+        if (!phoneNumber) {
             return (
                 <div className="setup-view">
                     <img className="big-logo" src="/logo.png" />
@@ -58,20 +59,22 @@ class App extends Component {
                         <br/>
                         <input onChange={this.handlePhoneNumberChange.bind(this)} id="phoneNumber" name="phoneNumber" placeholder="Ex: 2098675309" />
                         <br/>
-                        <input type="button" onClick={this.handlePhoneNumberEntered.bind(this)} value="Set" />
+                        <button onClick={this.handlePhoneNumberEntered.bind(this)}>Set</button>
                     </form>
                 </div>
             );
         }
 
-        if (view === "pending") {
+        const view = "day";
+
+        if (!appStore.challengeIsUnderway()) {
             return (
                 <div className="pending-view">
                     <img className="big-logo" src="/logo.png" />
                     <form className="pending-view-inner">
                         <label>Click "Start" when you are on day one:</label>
                         <br/>
-                        <input type="button" onClick={this.handlePhoneNumberEntered.bind(this)} value="Start" />
+                        <button onClick={this.handleStartClick.bind(this)}>Start</button>
                     </form>
                 </div>
             );
@@ -264,6 +267,8 @@ class App extends Component {
             );
         }
 
+        const isTodayComplete = appStore.isTodayComplete();
+
         // view === "day"
         return (
             <div className="day-view">
@@ -275,29 +280,29 @@ class App extends Component {
                     <button alt="Calendar" title="Calendar"></button>
                 </div>
                 <div className="day">
-                    <div className="line-item">
-                        <input type="checkbox" id="didWorkout" name="didWorkout" />
+                    <div className={`line-item${isTodayComplete ? ' disabled' : ''}`}>
+                        <input disabled={isTodayComplete} type="checkbox" id="didWorkout" name="didWorkout" />
                         <label htmlFor="didWorkout">Workout</label>
                     </div>
-                    <div className="line-item">
-                        <input type="checkbox" id="didDrinkWater" name="didDrinkWater" />
+                    <div className={`line-item${isTodayComplete ? ' disabled' : ''}`}>
+                        <input disabled={isTodayComplete} type="checkbox" id="didDrinkWater" name="didDrinkWater" />
                         <label htmlFor="didDrinkWater">Drink 1 gallon of water</label>
                     </div>
-                    <div className="line-item">
-                        <input type="checkbox" id="didRead" name="didRead" />
+                    <div className={`line-item${isTodayComplete ? ' disabled' : ''}`}>
+                        <input disabled={isTodayComplete} type="checkbox" id="didRead" name="didRead" />
                         <label htmlFor="didRead">Read 10 pages</label>
                     </div>
-                    <div className="line-item">
-                        <input type="checkbox" id="noCheatMeals" name="noCheatMeals" />
+                    <div className={`line-item${isTodayComplete ? ' disabled' : ''}`}>
+                        <input disabled={isTodayComplete} type="checkbox" id="noCheatMeals" name="noCheatMeals" />
                         <label htmlFor="noCheatMeals">No cheat meals</label>
                     </div>
                     {/*
-                    <button className="complete-day-button disabled completed" disabled>COMPLETE <span className="thumbs-up" /></button>
+                        <button className="complete-day-button">Done</button>
                     */}
-                    <button className="complete-day-button failure">I Failed</button>
-                    {/*
-                    <button className="complete-day-button">Done</button>
-                    */}
+                    {isTodayComplete
+                        ? <button className="complete-day-button disabled completed" disabled>COMPLETE <span className="thumbs-up" /></button>
+                        : <button className="complete-day-button failure">I Failed</button>
+                    }
                 </div>
                 <div className="streaks">
                     <div className="streak current isEqualToMax">

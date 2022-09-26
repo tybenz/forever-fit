@@ -1,13 +1,12 @@
 import Settings from '../settings';
+import moment from 'moment';
+import 'moment-timezone';
 
 const host = Settings.get('apiHost');
-let id = 1;
 
 export default class AppStore {
     constructor() {
         let phoneNumber;
-        this.id = id;
-        id++;
 
         try {
             phoneNumber = localStorage.getItem('userPhoneNumber');
@@ -31,17 +30,25 @@ export default class AppStore {
             });
         }
 
-        return fetch(`${host}/users/${this.phoneNumber}`).then(async (res) => {
-            const user = await res.json();
+        return fetch(`${host}/users/?phoneNumber=${this.phoneNumber}`).then(async (res) => {
+            if (res.status !== 200) {
+                return false;
+            }
 
-            if (!user) {
+            const userList = await res.json();
+
+            if (!userList || !userList.length) {
                 this._didUpdate();
                 return false;
             }
 
-            this.phoneNumber = user.id;
+            const user = userList[0];
+
+            this.id = user.id;
+            this.phoneNumber = user.phoneNumber;
             this.days = user.days;
-            this.starts = user.starts;
+            this.start = user.start;
+            this.startTimezone = user.startTimezone;
             this.currentStreak = user.currentStreak;
             this.maxStreak = user.maxStreak;
 
@@ -63,21 +70,76 @@ export default class AppStore {
 
         return fetch(`${host}/users`, {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 phoneNumber,
                 days: [],
-                starts: [],
+                start: false,
+                startTimezone: false,
                 currentStreak: 0,
                 maxStreak: 0
             })
-        }).then(() => {
+        }).then(async (res) => {
+            const user = await res.json();
+
+            this.id = user.id;
             this.phoneNumber = phoneNumber;
-            this.days = []
-            this.starts = []
-            this.currentStreak = 0
+            this.days = [];
+            this.start = false;
+            this.startTimezone = false;
+            this.currentStreak = 0;
             this.maxStreak = 0;
+            this.backupUser(phoneNumber);
             this._didUpdate();
         });
+    }
+
+    async updateUserRecord() {
+        return fetch(`${host}/users/${this.id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                phoneNumber: this.phoneNumber,
+                days: this.days,
+                start: this.start,
+                startTimezone: this.startTimezone,
+                currentStreak: this.currentStreak,
+                maxStreak: this.maxStreak
+            })
+        });
+    }
+
+    async startChallenge() {
+        if (!this.phoneNumber) {
+            throw new Error('Missing selected user/phone-number');
+        }
+
+        const today = moment().toISOString();
+        const timezone = moment.tz.guess();
+
+        this.start = today;
+        this.startTimezone = timezone;
+
+        return this.updateUserRecord();
+    }
+
+    challengeIsUnderway() {
+        // handle weird error
+        const today = moment();
+        if (this.start >= today) {
+            this.start = false;
+            return false;
+        }
+        return !!this.start;
+    }
+
+    isTodayComplete() {
+        const timezone = this.startTimezone;
+        const mostRecentlyLoggedDay = this.days[this.days.length - 1];
+        const mostRecentlyLoggedDateStr = mostRecentlyLoggedDay.date;
+        const mostRecentlyLoggedDate = moment.tz(mostRecentlyLoggedDateStr, timezone);
+        const today = moment.tz(moment(), timezone);
+        return today.diff(mostRecentlyLoggedDate, 'days') === 0;
     }
 
     getTodayFromCache() {

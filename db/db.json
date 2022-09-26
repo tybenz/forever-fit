@@ -1,7 +1,7 @@
 {
   "users": [
     {
-      "id": "2096142267",
+      "phoneNumber": "2096142267",
       "days": [
         {
           "date": "2022-09-24T07:00:00.000Z",
@@ -11,14 +11,11 @@
           "didRead": true
         }
       ],
-      "starts": [
-        "2022-09-24T07:00:00.000Z"
-      ],
+      "start": "2022-09-26T21:22:11.120Z",
+      "startTimezone": "America/Los_Angeles",
       "currentStreak": 1,
-      "maxStreak": 1
-    },
-    {
-      "id": "-2QaEqS"
+      "maxStreak": 1,
+      "id": "EQACMrl"
     }
   ]
 }
