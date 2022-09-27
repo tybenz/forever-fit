@@ -147,7 +147,7 @@ class App extends Component {
         return (
             <div className="day-view">
                 <div className="header">
-                    <div className="header-title">Day 1</div>
+                    <div className="header-title">{appStore.dayHeaderLabel()}</div>
                     {/*
                     <div className="header-title">Day 13 → 18</div>
                     */}

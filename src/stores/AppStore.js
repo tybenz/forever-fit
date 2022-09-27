@@ -135,15 +135,23 @@ export default class AppStore {
         return !!this.start;
     }
 
-    isTodayComplete() {
+    lastLoggedDay() {
         const timezone = this.startTimezone;
         const mostRecentlyLoggedDay = this.days[this.days.length - 1];
         if (!mostRecentlyLoggedDay) {
-            return false;
+            return undefined;
         }
 
         const mostRecentlyLoggedDateStr = mostRecentlyLoggedDay.date;
-        const mostRecentlyLoggedDate = moment.tz(mostRecentlyLoggedDateStr, timezone);
+        return moment.tz(mostRecentlyLoggedDateStr, timezone);
+    }
+
+    isTodayComplete() {
+        const timezone = this.startTimezone;
+        const mostRecentlyLoggedDate = this.lastLoggedDay();
+        if (!mostRecentlyLoggedDate) {
+            return false;
+        }
         const today = moment.tz(moment(), timezone);
         return today.diff(mostRecentlyLoggedDate, 'days') === 0;
     }
@@ -186,14 +194,25 @@ export default class AppStore {
 
     getTodayFromCache() {
         let today;
+        const startTimezone = this.startTimezone;
         try {
             let str = localStorage.getItem(`today:${this.phoneNumber}`);
             today = JSON.parse(str);
         } catch (err) {
         }
+        const lastLoggedDay = this.lastLoggedDay();
+        const todaysDate = moment.tz(moment(), startTimezone).startOf('day');
+        let currentDay;
+        if (lastLoggedDay) {
+            currentDay = (lastLoggedDay && todaysDate.diff(lastLoggedDay, 'days')) < 0
+                ? moment.tz(moment(), startTimezone).startOf('day')
+                : lastLoggedDay.add(1, 'days');
+        } else {
+            currentDay = moment.tz(moment(), startTimezone).startOf('day');
+        }
         if (!today) {
             today = {
-                date: moment.tz(moment().startOf('day'), this.startTimezone).toISOString(),
+                date: currentDay.toISOString(),
                 didWorkout: false,
                 didRead: false,
                 didDrinkWater: false,
@@ -208,6 +227,7 @@ export default class AppStore {
     clearTodayFromCache() {
         try {
             localStorage.removeItem(`today:${this.phoneNumber}`);
+            this.today = undefined;
         } catch (err) {
         }
     }
@@ -292,9 +312,7 @@ export default class AppStore {
         this._didUpdate();
     }
 
-    async completedToday(day) {
-        console.log(day);
-
+    async completedToday() {
         this.days.push(this.getToday());
         this.currentStreak++;
         if (this.currentStreak > this.maxStreak) {
@@ -322,5 +340,33 @@ export default class AppStore {
 
         this.clearTodayFromCache();
         this._didUpdate();
+    }
+
+    getCurrentDay() {
+        const mostRecentlyLoggedDate = this.lastLoggedDay();
+        return mostRecentlyLoggedDate.add(1, 'days');
+    }
+
+    dayHeaderLabel() {
+        const numDays = this.days.length;
+        let dayLabel = numDays + (this.isTodayComplete() ? 0 : 1);
+
+        if (this.isTodayComplete()) {
+            dayLabel = numDays;
+        } else {
+            const mostRecentlyLoggedDate = this.lastLoggedDay();
+            const timezone = this.startTimezone;
+            const today = moment.tz(moment(), timezone);
+            const dayDiff = today.diff(mostRecentlyLoggedDate, 'days');
+
+            if (dayDiff > 1) {
+                // gap
+                dayLabel = `${numDays + 1} → ${numDays + dayDiff}`;
+            } else {
+                dayLabel = numDays + 1;
+            }
+        }
+
+        return `Day ${dayLabel}`;
     }
 }
