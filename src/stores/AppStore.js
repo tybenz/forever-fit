@@ -2,8 +2,7 @@
 import moment from 'moment';
 import 'moment-timezone';
 
-// const host = Settings.get('apiHost');
-const host = `http://${window.location.hostname}:3001`;
+const host = Settings.get('apiHost');
 
 export default class AppStore {
     constructor() {
