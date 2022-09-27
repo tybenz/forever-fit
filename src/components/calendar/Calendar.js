@@ -95,33 +95,32 @@ class Calendar extends Component {
 
     render() {
         const dates = this.getAllMonths();
-        console.log(dates);
         return (
             <div className="calendar-view">
                 <button className="calendar-close" onClick={this.handleCloseClick.bind(this)}></button>
                 <div className="calendar">
-                    {dates.map((month, j) => {
+                    {dates.map((month, i) => {
                         return (
-                            <div key={`month-${j}`} className="month">
+                            <div key={`month-${i}`} className="month">
                                 <div className="month-title">{month[2][0].date.format('MMMM')}</div>
                                 <div className="month-grid">
-                                    {month.map((week) => {
+                                    {month.map((week, j) => {
                                         return (
-                                            <div className="calendar-row">
-                                                {week.map((day, i) => {
+                                            <div key={`week-${j}`} className="calendar-row">
+                                                {week.map((day, k) => {
                                                     if (!day) {
-                                                        return <div key={`day-${i}`} className="calendar-day blank"></div>;
+                                                        return <div key={`day-${k}`} className="calendar-day blank"></div>;
                                                     }
                                                     if (!day || !day.data) {
-                                                        return <div key={`day-${i}`} className="calendar-day inactive"></div>;
+                                                        return <div key={`day-${k}`} className="calendar-day inactive"></div>;
                                                     }
                                                     if (day.data && !day.data.noCheatMeals) {
-                                                        return <div key={`day-${i}`} className="calendar-day completed cheat-meal">{day.num}</div>;
+                                                        return <div key={`day-${k}`} className="calendar-day completed cheat-meal">{day.num}</div>;
                                                     }
                                                     if (day.data && !day.data.didWorkout) {
-                                                        return <div key={`day-${i}`} className="calendar-day completed rest-day">{day.num}</div>;
+                                                        return <div key={`day-${k}`} className="calendar-day completed rest-day">{day.num}</div>;
                                                     }
-                                                    return <div key={`day-${i}`} className="calendar-day completed">{day.num}</div>;
+                                                    return <div key={`day-${k}`} className="calendar-day completed">{day.num}</div>;
                                                 })}
                                             </div>
                                         );

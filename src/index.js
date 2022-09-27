@@ -9,7 +9,9 @@ import AppStore from './stores/AppStore';
     const appStore = new AppStore();
     await appStore.load();
 
-    const root = ReactDOM.createRoot(document.body);
+    const rootNode = document.querySelector('#root');
+
+    const root = ReactDOM.createRoot(rootNode);
     root.render(
         <React.StrictMode>
             <App appStore={appStore} />
