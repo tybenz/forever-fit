@@ -139,7 +139,7 @@ export default class AppStore {
         const timezone = this.startTimezone;
         const mostRecentlyLoggedDay = this.days[this.days.length - 1];
         if (!mostRecentlyLoggedDay) {
-            return undefined;
+            return moment.tz(this.start, this.startTimezone);
         }
 
         const mostRecentlyLoggedDateStr = mostRecentlyLoggedDay.date;
@@ -213,10 +213,10 @@ export default class AppStore {
         if (!today) {
             today = {
                 date: currentDay.toISOString(),
-                didWorkout: false,
-                didRead: false,
-                didDrinkWater: false,
-                noCheatMeals: false
+                didWorkout: true,
+                didRead: true,
+                didDrinkWater: true,
+                noCheatMeals: true
             };
         }
         this.today = today;

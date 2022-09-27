@@ -121,7 +121,6 @@ class App extends Component {
     }
 
     _renderMain() {
-        console.log('render main');
         const { appStore } = this.props;
         const { phoneNumber } = appStore;
 
