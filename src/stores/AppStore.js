@@ -1,8 +1,9 @@
-import Settings from '../settings';
+// import Settings from '../settings';
 import moment from 'moment';
 import 'moment-timezone';
 
-const host = Settings.get('apiHost');
+// const host = Settings.get('apiHost');
+const host = `http://${window.location.hostname}:3001`;
 
 export default class AppStore {
     constructor() {
@@ -213,10 +214,10 @@ export default class AppStore {
         if (!today) {
             today = {
                 date: currentDay.toISOString(),
-                didWorkout: true,
-                didRead: true,
-                didDrinkWater: true,
-                noCheatMeals: true
+                didWorkout: false,
+                didRead: false,
+                didDrinkWater: false,
+                noCheatMeals: false
             };
         }
         this.today = today;
