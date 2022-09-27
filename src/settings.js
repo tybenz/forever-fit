@@ -6,7 +6,7 @@ if (window.location.host === 'localhost') {
 const Settings = {
     apiHost: {
         local: 'http://localhost:3001',
-        prod: 'http://localhost:3001'
+        prod: 'https://forever-fit-db.herokuapp.com'
     },
 
     get: (key) => {
