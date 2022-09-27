@@ -1,5 +1,5 @@
 let ENV = 'prod';
-if (window.location.host === 'localhost') {
+if (window.location.hostname === 'localhost') {
     ENV = 'local';
 }
 

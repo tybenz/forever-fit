@@ -155,7 +155,7 @@ class App extends Component {
                 <div className="day">
                     <div className={`line-item${isTodayComplete ? ' disabled' : ''}`}>
                         <input disabled={isTodayComplete} onChange={this.handleWorkoutCheckbox.bind(this)} checked={didWorkout} type="checkbox" id="didWorkout" name="didWorkout" />
-                        <label htmlFor="didWorkout">Workout{isRestDay ? <span className="rest-day-flag" /> : ''}</label>
+                        <label htmlFor="didWorkout">Workout{(isRestDay && !isTodayComplete) ? <span className="rest-day-flag" /> : ''}</label>
                     </div>
                     <div className={`line-item${isTodayComplete ? ' disabled' : ''}`}>
                         <input disabled={isTodayComplete} onChange={this.handleWaterCheckbox.bind(this)} checked={didDrinkWater} type="checkbox" id="didDrinkWater" name="didDrinkWater" />
@@ -167,7 +167,7 @@ class App extends Component {
                     </div>
                     <div className={`line-item${isTodayComplete ? ' disabled' : ''}`}>
                         <input disabled={isTodayComplete} onChange={this.handleMealsCheckbox.bind(this)} checked={noCheatMeals} type="checkbox" id="noCheatMeals" name="noCheatMeals" />
-                        <label htmlFor="noCheatMeals">No cheat meals{isCheatDay ? <span className="cheat-day-flag" /> : ''}</label>
+                        <label htmlFor="noCheatMeals">No cheat meals{(isCheatDay && !isTodayComplete) ? <span className="cheat-day-flag" /> : ''}</label>
                     </div>
                     {this._renderDoneButton()}
                 </div>

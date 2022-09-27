@@ -135,11 +135,15 @@ export default class AppStore {
         return !!this.start;
     }
 
+    calcTodayWithTimezone() {
+        return moment.tz(moment(), this.startTimezone).startOf('day');
+    }
+
     lastLoggedDay() {
         const timezone = this.startTimezone;
         const mostRecentlyLoggedDay = this.days[this.days.length - 1];
         if (!mostRecentlyLoggedDay) {
-            return moment.tz(this.start, this.startTimezone);
+            return undefined;
         }
 
         const mostRecentlyLoggedDateStr = mostRecentlyLoggedDay.date;
@@ -147,12 +151,11 @@ export default class AppStore {
     }
 
     isTodayComplete() {
-        const timezone = this.startTimezone;
         const mostRecentlyLoggedDate = this.lastLoggedDay();
         if (!mostRecentlyLoggedDate) {
             return false;
         }
-        const today = moment.tz(moment(), timezone);
+        const today = this.calcTodayWithTimezone();
         return today.diff(mostRecentlyLoggedDate, 'days') === 0;
     }
 
@@ -344,6 +347,9 @@ export default class AppStore {
 
     getCurrentDay() {
         const mostRecentlyLoggedDate = this.lastLoggedDay();
+        if (!mostRecentlyLoggedDate) {
+            return this.calcTodayWithTimezone();
+        }
         return mostRecentlyLoggedDate.add(1, 'days');
     }
 
@@ -355,13 +361,18 @@ export default class AppStore {
             dayLabel = numDays;
         } else {
             const mostRecentlyLoggedDate = this.lastLoggedDay();
-            const timezone = this.startTimezone;
-            const today = moment.tz(moment(), timezone);
-            const dayDiff = today.diff(mostRecentlyLoggedDate, 'days');
 
-            if (dayDiff > 1) {
-                // gap
-                dayLabel = `${numDays + 1} → ${numDays + dayDiff}`;
+            if (mostRecentlyLoggedDate) {
+                const timezone = this.startTimezone;
+                const today = moment.tz(moment(), timezone);
+                const dayDiff = today.diff(mostRecentlyLoggedDate, 'days');
+
+                if (dayDiff > 1) {
+                    // gap
+                    dayLabel = `${numDays + 1} → ${numDays + dayDiff}`;
+                } else {
+                    dayLabel = numDays + 1;
+                }
             } else {
                 dayLabel = numDays + 1;
             }
