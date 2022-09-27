@@ -306,12 +306,26 @@
           "didRead": true,
           "didDrinkWater": true,
           "noCheatMeals": true
+        },
+        {
+          "date": "2022-09-26T07:00:00.000Z",
+          "didWorkout": true,
+          "didRead": true,
+          "didDrinkWater": true,
+          "noCheatMeals": true
+        },
+        {
+          "date": "2022-09-27T07:00:00.000Z",
+          "didWorkout": true,
+          "didRead": true,
+          "didDrinkWater": true,
+          "noCheatMeals": true
         }
       ],
       "start": "2022-08-15T07:00:00.000Z",
       "startTimezone": "America/Los_Angeles",
-      "currentStreak": 77,
-      "maxStreak": 77,
+      "currentStreak": 79,
+      "maxStreak": 79,
       "id": 2
     }
   ]

@@ -7,14 +7,35 @@ class Calendar extends Component {
         this.props.onHide(evt);
     }
 
-    getDatesForMonth() {
-        // const { appStore } = this.props;
-        // const loggedDays = appStore.days;
-        var daysInMonth = moment().daysInMonth();
+    getAllMonths() {
+        const { appStore } = this.props;
+        const loggedDays = appStore.days;
+        const firstLoggedDate = moment.tz(loggedDays[0].date, appStore.startTimezone);
+        const lastLoggedDate = moment.tz(loggedDays[loggedDays.length - 1].date, appStore.startTimezone);
+        const firstLoggedMonth = firstLoggedDate.month();
+        const firstLoggedDateStartOfMonth = firstLoggedDate.startOf('month');
+        const lastLoggedMonth = lastLoggedDate.month();
+
+        const months = [];
+        let offset = 0;
+        for (let i = firstLoggedMonth; i <= lastLoggedMonth; i++) {
+            months.push(this.getDatesForMonth(firstLoggedDateStartOfMonth.add(offset, 'months')));
+            offset++;
+        }
+        return months;
+    }
+
+    getDatesForMonth(dateProvided) {
+        const { appStore } = this.props;
+        const loggedDays = appStore.days;
+        const firstLoggedDate = moment.tz(loggedDays[0].date, appStore.startTimezone);
+
+        const date = dateProvided || moment();
+        var daysInMonth = date.daysInMonth();
         var arrDays = [];
 
         while(daysInMonth) {
-            var current = moment().date(daysInMonth);
+            var current = date.clone().date(daysInMonth);
             arrDays.push(current);
             daysInMonth--;
         }
@@ -33,30 +54,39 @@ class Calendar extends Component {
 
         const weeks = [];
         let week;
+        var dayOfMonthIndex = 0;
+        let currentLoggedDateIndex = -1;
         for (var currentWeek = 0; currentWeek < numWeeksToDisplay; currentWeek++) {
+            let start;
+            let end;
             if (currentWeek === 0) {
-                week = [undefined, undefined, undefined, undefined, undefined, undefined, undefined];
-                weeks[currentWeek] = week;
-                var j = 0;
-                for (var i = first.day(); i < 7; i++) {
-                    week[i] = { date: arrDays[j] }
-                    j++;
-                }
+                start = first.day();
+                end = 7;
             } else if (currentWeek === numWeeksToDisplay - 1) {
-                week = [undefined, undefined, undefined, undefined, undefined, undefined, undefined];
-                weeks[numWeeksToDisplay - 1] = week;
-                var j = 0;
-                for (var i = 0; i < last.day(); i++) {
-                    week[i] = { date: arrDays[j] };
-                    j++;
-                }
+                start = 0;
+                end = last.day() + 1;
             } else {
-                week = [undefined, undefined, undefined, undefined, undefined, undefined, undefined];
-                weeks[currentWeek] = week;
-                var j = 0;
-                for (var i = 0; i < 7; i++) {
-                    week[i] = { date: arrDays[j] };
-                    j++;
+                start = 0;
+                end = 7;
+            }
+
+            week = [undefined, undefined, undefined, undefined, undefined, undefined, undefined];
+            weeks[currentWeek] = week;
+            for (var i = start; i < end; i++) {
+                const date = arrDays[dayOfMonthIndex];
+                const diff = date.diff(firstLoggedDate, 'days');
+                if (currentLoggedDateIndex === -1 && diff >= 0) {
+                    currentLoggedDateIndex = diff;
+                }
+
+                if (currentLoggedDateIndex > -1) {
+                    week[i] = { data: loggedDays[currentLoggedDateIndex], num: currentLoggedDateIndex + 1, date }
+                } else {
+                    week[i] = { date }
+                }
+                dayOfMonthIndex++;
+                if (currentLoggedDateIndex > -1) {
+                    currentLoggedDateIndex++;
                 }
             }
         }
@@ -64,29 +94,42 @@ class Calendar extends Component {
     }
 
     render() {
-        const dates = this.getDatesForMonth();
+        const dates = this.getAllMonths();
         console.log(dates);
         return (
             <div className="calendar-view">
                 <button className="calendar-close" onClick={this.handleCloseClick.bind(this)}></button>
                 <div className="calendar">
-                    <div className="month">
-                        <div className="month-title">{dates[2][0].format('MMMM')}</div>
-                        <div className="month-grid">
-                            {dates.map((week) => {
-                                return (
-                                    <div className="calendar-row">
-                                        {week.map((day) => {
-                                            if (!day) {
-                                                return <div className="calendar-day blank"></div>;
-                                            }
-                                            return <div className="calendar-day inactive"></div>;
-                                        })}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+                    {dates.map((month, j) => {
+                        return (
+                            <div key={`month-${j}`} className="month">
+                                <div className="month-title">{month[2][0].date.format('MMMM')}</div>
+                                <div className="month-grid">
+                                    {month.map((week) => {
+                                        return (
+                                            <div className="calendar-row">
+                                                {week.map((day, i) => {
+                                                    if (!day) {
+                                                        return <div key={`day-${i}`} className="calendar-day blank"></div>;
+                                                    }
+                                                    if (!day || !day.data) {
+                                                        return <div key={`day-${i}`} className="calendar-day inactive"></div>;
+                                                    }
+                                                    if (day.data && !day.data.noCheatMeals) {
+                                                        return <div key={`day-${i}`} className="calendar-day completed cheat-meal">{day.num}</div>;
+                                                    }
+                                                    if (day.data && !day.data.didWorkout) {
+                                                        return <div key={`day-${i}`} className="calendar-day completed rest-day">{day.num}</div>;
+                                                    }
+                                                    return <div key={`day-${i}`} className="calendar-day completed">{day.num}</div>;
+                                                })}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         );
