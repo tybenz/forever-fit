@@ -1,4 +1,7 @@
-import { ENV } from './env.json';
+let ENV = 'prod';
+if (window.location.host === 'localhost') {
+    ENV = 'local';
+}
 
 const Settings = {
     apiHost: {
