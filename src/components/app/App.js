@@ -1,8 +1,8 @@
 import { Component } from 'react';
-import Calendar from '../calendar/Calendar';
-import SetupView from '../setup-view/SetupView';
-import PendingView from '../pending-view/PendingView';
-import Streaks from '../streaks/Streaks';
+import Calendar from '../calendar/Calendar.js';
+import SetupView from '../setup-view/SetupView.js';
+import PendingView from '../pending-view/PendingView.js';
+import Streaks from '../streaks/Streaks.js';
 import './App.css';
 
 class App extends Component {

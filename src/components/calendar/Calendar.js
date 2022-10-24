@@ -10,6 +10,10 @@ class Calendar extends Component {
     getAllMonths() {
         const { appStore } = this.props;
         const loggedDays = appStore.days;
+        if (!loggedDays || !loggedDays.length) {
+            return [];
+        }
+
         const firstLoggedDate = moment.tz(loggedDays[0].date, appStore.startTimezone);
         const lastLoggedDate = moment.tz(loggedDays[loggedDays.length - 1].date, appStore.startTimezone);
         const firstLoggedMonth = firstLoggedDate.month();
@@ -95,6 +99,18 @@ class Calendar extends Component {
 
     render() {
         const dates = this.getAllMonths();
+
+        if (!dates || !dates.length) {
+            return (
+                <div className="calendar-view">
+                    <button className="calendar-close" onClick={this.handleCloseClick.bind(this)}></button>
+                    <div className="calendar">
+                        <div className="calendar-empty">No days completed</div>
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className="calendar-view">
                 <button className="calendar-close" onClick={this.handleCloseClick.bind(this)}></button>

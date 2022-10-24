@@ -183,6 +183,18 @@ button,
     background-image: url('../../assets/close.png');
 }
 
+.calendar-view .calendar-empty {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 3em;
+    color: #222;
+    text-align: center;
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+}
+
 .day {
     max-width: 90%;
     max-height: 930px;

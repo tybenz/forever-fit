@@ -1,4 +1,4 @@
-import Settings from '../settings';
+import Settings from '../settings.js';
 import moment from 'moment';
 import 'moment-timezone';
 
@@ -30,27 +30,25 @@ export default class AppStore {
             });
         }
 
-        return fetch(`${host}/users/?phoneNumber=${this.phoneNumber}`).then(async (res) => {
+        return fetch(`${host}/users/${this.phoneNumber}`).then(async (res) => {
             if (res.status !== 200) {
                 return false;
             }
 
-            const userList = await res.json();
+            const user = await res.json();
 
-            if (!userList || !userList.length) {
+            if (!user || !user.phoneNumber) {
                 this._didUpdate();
                 return false;
             }
 
-            const user = userList[0];
-
             this.id = user.id;
             this.phoneNumber = user.phoneNumber;
-            this.days = user.days;
-            this.start = user.start;
-            this.startTimezone = user.startTimezone;
-            this.currentStreak = user.currentStreak;
-            this.maxStreak = user.maxStreak;
+            this.days = user.days || [];
+            this.start = user.start || false;
+            this.startTimezone = user.startTimezone || false;
+            this.currentStreak = user.currentStreak || false;
+            this.maxStreak = user.maxStreak || false;
 
             this._didUpdate();
             return true;
@@ -95,7 +93,7 @@ export default class AppStore {
     }
 
     async updateUserRecord() {
-        return fetch(`${host}/users/${this.id}`, {
+        return fetch(`${host}/users/${this.phoneNumber}`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({

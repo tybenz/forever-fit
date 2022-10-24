@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './components/app/App';
-import AppStore from './stores/AppStore';
+import App from './components/app/App.js';
+import AppStore from './stores/AppStore.js';
 
 (async () => {
 

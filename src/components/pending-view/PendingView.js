@@ -1,10 +1,6 @@
 import { Component } from 'react';
 
 class SetupView extends Component {
-    constructor(props) {
-        super(props);
-    }
-
     async handleStartClick(evt) {
         evt.stopPropagation();
         evt.preventDefault();
