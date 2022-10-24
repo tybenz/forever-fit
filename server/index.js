@@ -23,6 +23,7 @@ const pick = (object, keys) => {
 
 const fetchUsers = () => {
     return new Promise((resolve, reject) => {
+        console.log(`S3 GETTING: 'db-${env}.json'`);
         s3.getObject(
             {
                 Bucket: 'forever-fit-db',
@@ -32,6 +33,7 @@ const fetchUsers = () => {
                 if (err) {
                     reject(err);
                 }
+                console.log(`S3 GOT: 'db-${env}.json'`);
                 try {
                     const users = JSON.parse(data.Body.toString('utf-8')).users;
                     resolve(users);
@@ -49,6 +51,7 @@ const pushUsers = async (changeFn) => {
     changeFn(users);
 
     return new Promise((resolve, reject) => {
+        console.log(`S3 UPDATING: 'db-${env}.json'`);
         s3.putObject(
             {
                 Bucket: 'forever-fit-db',
@@ -60,6 +63,7 @@ const pushUsers = async (changeFn) => {
                 if (err) {
                     reject(err);
                 }
+                console.log(`S3 UPDATED: 'db-${env}.json'`);
                 resolve();
             }
         );
