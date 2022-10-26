@@ -55,6 +55,17 @@ export default class AppStore {
         });
     }
 
+    logoutUser() {
+        this.clearBackedUpUser();
+        this.phoneNumber = undefined;
+        this.days = [];
+        this.start = false;
+        this.startTimezone = false;
+        this.currentStreak = false;
+        this.maxStreak = false;
+        this._didUpdate();
+    }
+
     async setupUser(phoneNumber) {
         this.phoneNumber = phoneNumber;
 
@@ -88,6 +99,7 @@ export default class AppStore {
             this.currentStreak = 0;
             this.maxStreak = 0;
             this.backupUser(phoneNumber);
+
             this._didUpdate();
         });
     }
@@ -238,6 +250,14 @@ export default class AppStore {
             this.today = this.getTodayFromCache();
         }
         return this.today;
+    }
+
+    clearBackedUpUser() {
+        try {
+            localStorage.removeItem('userPhoneNumber');
+        } catch (err) {
+            console.log('Could not clear current data from localStorage ' + err);
+        }
     }
 
     backupUser(phoneNumber) {

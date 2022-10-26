@@ -72,7 +72,9 @@ const pushUsers = async (changeFn) => {
 
 app.get('/users', async (req, res, next) => {
     try {
+        console.log("GET USERS");
         const users = await fetchUsers();
+        console.log("GOT USERS - LENGTH: " + users.length);
         res.status(200).send(users);
     } catch (err) {
         next(err);
@@ -81,9 +83,12 @@ app.get('/users', async (req, res, next) => {
 
 app.get('/users/:phoneNumber', async (req, res, next) => {
     try {
+        console.log("GET USER: " + req.params.phoneNumber);
         const users = await fetchUsers();
+        console.log(JSON.stringify(users));
         const user = users.find((u) => u.phoneNumber === req.params.phoneNumber);
         if (user) {
+            console.log("GOT USER: " + JSON.stringify(user));
             res.status(200).send(user);
             return;
         }
@@ -96,50 +101,47 @@ app.get('/users/:phoneNumber', async (req, res, next) => {
 app.post('/users', async (req, res, next) => {
     try {
         const phoneNumber = req.body.phoneNumber;
+        console.log("CREATE USER: " + phoneNumber);
+        const params = ['phoneNumber', 'days', 'start', 'startTimezone', 'currentStreak', 'maxStreak'];
+        const user = pick(req.body, params);
         await pushUsers((users) => {
-            let user = users.find((u) => u.phoneNumber = phoneNumber);
-            if (!user) {
-                const err = new Error('Not found');
-                err.status = 404;
-                throw err;
-            }
-
-            const params = ['phoneNumber', 'days', 'start', 'startTimezone', 'currentStreak', 'maxStreak'];
-            if (user) {
+            const existingUser = users.find((u) => u.phoneNumber === phoneNumber);
+            if (existingUser) {
                 throw new Error('user already exists');
             } else {
-                const userParamsFromBody = pick(req.body, params);
-                user = userParamsFromBody;
                 users.push(user);
             }
         });
-        res.sendStatus(200);
+        console.log("USER ADDED: " + phoneNumber);
+        res.status(200).send(user);
     } catch (err) {
         next(err);
     }
 });
 
 app.put('/users/:phoneNumber', async (req, res, next) => {
-    const phoneNumber = req.params.phoneNumber;
-    pushUsers((users) => {
-        let user = users.find((u) => u.phoneNumber = phoneNumber);
-        const params = ['phoneNumber', 'days', 'start', 'startTimezone', 'currentStreak', 'maxStreak'];
-        if (!user) {
-            throw new Error('user w/ phoneNumber ' + phoneNumber + ' does not exist');
-        } else {
-            // patch user w/ body
-            const userParamsFromBody = pick(req.body, params);
-            params.forEach((key) => {
-                user[key] = userParamsFromBody[key];
-            });
-        }
-    })
-    .then(() => {
+    try {
+        const phoneNumber = req.params.phoneNumber;
+        console.log("UPDATE USER: " + phoneNumber);
+        await pushUsers((users) => {
+            let user = users.find((u) => u.phoneNumber === phoneNumber);
+            const params = ['phoneNumber', 'days', 'start', 'startTimezone', 'currentStreak', 'maxStreak'];
+            if (!user) {
+                throw new Error('user w/ phoneNumber ' + phoneNumber + ' does not exist');
+            } else {
+                // patch user w/ body
+                const userParamsFromBody = pick(req.body, params);
+                params.forEach((key) => {
+                    user[key] = userParamsFromBody[key];
+                });
+            }
+        });
+        console.log("UPDATED USER: " + phoneNumber);
         res.sendStatus(200);
-    }).catch((err) => {
+    } catch (err) {
         console.error(err);
         next(err);
-    });
+    }
 });
 
 app.use((err) => {

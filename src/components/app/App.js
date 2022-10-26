@@ -28,6 +28,15 @@ class App extends Component {
         window.removeEventListener('app-store-did-update', this._update);
     }
 
+    handleLogoutButtonClick(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        if (window.confirm("Are you sure you want to logout?")) {
+            this.props.appStore.logoutUser();
+        }
+    }
+
     handleCalendarButtonClick(evt) {
         evt.stopPropagation();
         evt.preventDefault();
@@ -146,11 +155,9 @@ class App extends Component {
         return (
             <div className="day-view">
                 <div className="header">
+                    <button alt="Logout" title="Logout" className="logout-button" onClick={this.handleLogoutButtonClick.bind(this)}></button>
                     <div className="header-title">{appStore.dayHeaderLabel()}</div>
-                    {/*
-                    <div className="header-title">Day 13 → 18</div>
-                    */}
-                    <button alt="Calendar" title="Calendar" onClick={this.handleCalendarButtonClick.bind(this)}></button>
+                    <button alt="Calendar" title="Calendar" className="calendar-button" onClick={this.handleCalendarButtonClick.bind(this)}></button>
                 </div>
                 <div className="day">
                     <div className={`line-item${isTodayComplete ? ' disabled' : ''}`}>

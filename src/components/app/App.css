@@ -162,7 +162,8 @@ button,
 }
 
 .calendar-view .calendar-close,
-.day-view .header button {
+.day-view .header .logout-button,
+.day-view .header .calendar-button {
     position: absolute;
     top: 22px;
     right: 15px;
@@ -177,6 +178,12 @@ button,
     box-shadow: none;
     width: 24px;
     height: 24px;
+}
+
+.day-view .header .logout-button {
+    right: auto;
+    left: 22px;
+    background-image: url('../../assets/logout.png');
 }
 
 .calendar-view .calendar-close {
